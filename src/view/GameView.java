@@ -1,31 +1,31 @@
 package view;
 
-import java.awt.Image;
+import chess.Board;
+import chess.Piece;
+import chess.Rules;
+import control.GameController;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+
+import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JOptionPane;
-import javax.swing.WindowConstants;
-
-import controller.GameController;
-import model.Board;
-import model.Piece;
-import model.PieceRules;
-
+/**
+ * Created by Tong on 12.10. Dealing with graphics logic in the chess game.
+ * Render with j2d.
+ */
 public class GameView {
 	private static final int VIEW_WIDTH = 700, VIEW_HEIGHT = 712;
 	private static final int PIECE_WIDTH = 67, PIECE_HEIGHT = 67;
-//	private static final int SY_COE = 68, SX_COE = 68;
-//	private static final int SX_OFFSET = 50, SY_OFFSET = 15;
-	private static final int SY_COE = 70, SX_COE = 76;
-	private static final int SX_OFFSET = 14, SY_OFFSET = 12;	
+	private static final int SY_COE = 68, SX_COE = 68;
+	private static final int SX_OFFSET = 50, SY_OFFSET = 15;
 	private Map<String, JLabel> pieceObjects = new HashMap<String, JLabel>();
 	private Board board;
 	private String selectedPieceKey;
@@ -40,38 +40,96 @@ public class GameView {
 
 	public void init(final Board board) {
 		this.board = board;
-		frame = new JFrame("CỜ TƯỚNG (JIANG)");
-//		frame.setIconImage(new ImageIcon("res/img/icon.png").getImage());
-		frame.setSize(VIEW_WIDTH, VIEW_HEIGHT + 40);
+		frame = new JFrame("Intelligent Chinese Chess @Zhongyi.Tong");
+		frame.setIconImage(new ImageIcon("res/img/icon.png").getImage());
+		frame.setSize(VIEW_WIDTH + 250, VIEW_HEIGHT + 40);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		pane = new JLayeredPane();
 		frame.add(pane);
 
-//		JLabel bgBoard = new JLabel(new ImageIcon("res/img/board2.png"));
-		JLabel bgBoard = new JLabel(setImageIconButton("board2.png"));
-//				new ImageIcon("res/img/board2.png"));
-		
+		/* Initialize chess board and listeners on each slot. */
+		JLabel bgBoard = new JLabel(new ImageIcon("res/img/board.png"));
 		bgBoard.setLocation(0, 0);
 		bgBoard.setSize(VIEW_WIDTH, VIEW_HEIGHT);
 		bgBoard.addMouseListener(new BoardClickListener());
 		pane.add(bgBoard, 1);
 
-		lblPlayer = new JLabel(setImageIconButton("r.png"));
-				//new ImageIcon("res/img/r.png"));
-		lblPlayer.setLocation(10, 323);
+		/* Initialize player image. */
+		lblPlayer = new JLabel(new ImageIcon("res/img/r.png"));
+		lblPlayer.setLocation(10, 320);
 		lblPlayer.setSize(PIECE_WIDTH, PIECE_HEIGHT);
 		pane.add(lblPlayer, 0);
 
+//		Bắt đầu lại trò chơi
+		JButton btnResetGame = new JButton("Reset Game");
+		btnResetGame.setSize(120, 30);
+		btnResetGame.setLocation(750, 200);
+		btnResetGame.setFocusable(false);
+		pane.add(btnResetGame);
+
+//		Chơi người vs người, người vs máy
+		JPanel pnlChooseType = new JPanel();
+		pnlChooseType.setSize(165, 100);
+		pnlChooseType.setLocation(725, 250);
+		pnlChooseType.setBorder(new LineBorder(new Color(0, 0, 0)));
+		pnlChooseType.setLayout(new FlowLayout(FlowLayout.LEFT));
+		pane.add(pnlChooseType);
+		
+		JLabel lbltextType = new JLabel("Number of players:");
+		pnlChooseType.add(lbltextType);
+		
+		
+		JRadioButton rdbOne = new JRadioButton("One player");
+		rdbOne.setBounds(725, 200, 170, 30);
+		rdbOne.setFocusable(false);
+		pnlChooseType.add(rdbOne);
+		
+		JRadioButton rdbTwo = new JRadioButton("Two player");
+		pnlChooseType.add(rdbTwo);
+		rdbTwo.setFocusable(false);
+		rdbTwo.setBounds(725, 250, 170, 30);
+
+		ButtonGroup btg = new ButtonGroup();
+		btg.add(rdbOne);
+		btg.add(rdbTwo);
+//		kết thúc phần chọn loại trò chơi
+		
+//		
+//		Level game: minimax, alphabeta ( cấp độ depth)
+		JPanel pnlChooseLevel = new JPanel();
+		pnlChooseLevel.setSize(165, 100);
+		pnlChooseLevel.setLocation(725, 250);
+		pnlChooseLevel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		pnlChooseLevel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		pane.add(pnlChooseLevel);
+		
+		JLabel lbltextLevel = new JLabel("Level Game:");
+		pnlChooseLevel.add(lbltextLevel);
+		
+		
+//		JRadioButton rdb1 = new JRadioButton("One player");
+//		rdb1.setBounds(725, 200, 170, 30);
+//		rdb1.setFocusable(false);
+//		pnlChooseLevel.add(rdb1);
+//		
+//		JRadioButton rdb2 = new JRadioButton("Two player");
+//		pnlChooseLevel.add(rdb2);
+//		rdb2.setFocusable(false);
+//		rdb2.setBounds(725, 250, 170, 30);
+//
+//		ButtonGroup btg = new ButtonGroup();
+//		btg.add(rdb1);
+//		btg.add(rdb2);
+//		kết thúc phần chọn loại trò chơi
+		
+		/* Initialize chess pieces and listeners on each piece. */
 		Map<String, Piece> pieces = board.pieces;
 		for (Map.Entry<String, Piece> stringPieceEntry : pieces.entrySet()) {
 			String key = stringPieceEntry.getKey();
 			int[] pos = stringPieceEntry.getValue().position;
 			int[] sPos = modelToViewConverter(pos);
-			String nameIMG=key.substring(0,2)+".png";
-			JLabel lblPiece = new JLabel(setImageIconButton(nameIMG));
-					///new ImageIcon("res/img/"
-				//	+ key.substring(0, 2) + ".png"));
+			JLabel lblPiece = new JLabel(new ImageIcon("res/img/" + key.substring(0, 2) + ".png"));
 
 			lblPiece.setLocation(sPos[0], sPos[1]);
 			lblPiece.setSize(PIECE_WIDTH, PIECE_HEIGHT);
@@ -87,6 +145,7 @@ public class GameView {
 		int[] sPos = modelToViewConverter(to);
 		pieceObject.setLocation(sPos[0], sPos[1]);
 
+		/* Clear 'from' and 'to' info on the board */
 		selectedPieceKey = null;
 	}
 
@@ -101,6 +160,7 @@ public class GameView {
 		int[] sPos = modelToViewConverter(to);
 		pieceObject.setLocation(sPos[0], sPos[1]);
 
+		/* Clear 'from' and 'to' info on the board */
 		selectedPieceKey = null;
 	}
 
@@ -110,27 +170,27 @@ public class GameView {
 	}
 
 	private int[] viewToModelConverter(int sPos[]) {
+		/*
+		 * To make things right, I have to put an 'additional sy offset'. God knows why.
+		 */
 		int ADDITIONAL_SY_OFFSET = 25;
-		int y = (sPos[0] - SX_OFFSET) / SX_COE, x = (sPos[1] - SY_OFFSET - ADDITIONAL_SY_OFFSET)
-				/ SY_COE;
+		int y = (sPos[0] - SX_OFFSET) / SX_COE, x = (sPos[1] - SY_OFFSET - ADDITIONAL_SY_OFFSET) / SY_COE;
 		return new int[] { x, y };
 	}
 
 	public void showPlayer(char player) {
-		String nameImg=player+".png";
-		lblPlayer.setIcon(setImageIconButton(nameImg));
-				//new ImageIcon("res/img/" + player + ".png"));
+		lblPlayer.setIcon(new ImageIcon("res/img/" + player + ".png"));
 		frame.setVisible(true);
 	}
 
 	public void showWinner(char player) {
-		JOptionPane.showMessageDialog(null,
-				(player == 'r') ? "Chúc mừng Bạn Đã THẮNG!"
-						: "Thật tiếc Bạn Đã THUA!", "Cờ Tướng (JIANG)",
-				JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, (player == 'r') ? "Red player has won!" : "Black player has won!",
+				"Intelligent Chinese Chess", JOptionPane.INFORMATION_MESSAGE);
 		System.exit(0);
 	}
+	
 
+	
 	class PieceOnClickListener extends MouseAdapter {
 		private String key;
 
@@ -142,11 +202,11 @@ public class GameView {
 		public void mousePressed(MouseEvent e) {
 			if (selectedPieceKey != null && key.charAt(0) != board.player) {
 				int[] pos = board.pieces.get(key).position;
-
 				int[] selectedPiecePos = board.pieces.get(selectedPieceKey).position;
-				for (int[] each : PieceRules.getNextMove(selectedPieceKey,
-						selectedPiecePos, board)) {
+				/* If an enemy piece already has been selected. */
+				for (int[] each : Rules.getNextMove(selectedPieceKey, selectedPiecePos, board)) {
 					if (Arrays.equals(each, pos)) {
+						// Kill self and move that piece.
 						pane.remove(pieceObjects.get(key));
 						pieceObjects.remove(key);
 						controller.moveChess(selectedPieceKey, pos, board);
@@ -155,6 +215,7 @@ public class GameView {
 					}
 				}
 			} else if (key.charAt(0) == board.player) {
+				/* Select the piece. */
 				selectedPieceKey = key;
 			}
 		}
@@ -164,12 +225,10 @@ public class GameView {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if (selectedPieceKey != null) {
-				int[] sPos = new int[] { e.getXOnScreen() - frame.getX(),
-						e.getYOnScreen() - frame.getY() };
+				int[] sPos = new int[] { e.getXOnScreen() - frame.getX(), e.getYOnScreen() - frame.getY() };
 				int[] pos = viewToModelConverter(sPos);
 				int[] selectedPiecePos = board.pieces.get(selectedPieceKey).position;
-				for (int[] each : PieceRules.getNextMove(selectedPieceKey,
-						selectedPiecePos, board)) {
+				for (int[] each : Rules.getNextMove(selectedPieceKey, selectedPiecePos, board)) {
 					if (Arrays.equals(each, pos)) {
 						controller.moveChess(selectedPieceKey, pos, board);
 						movePieceFromModel(selectedPieceKey, pos);
@@ -179,11 +238,5 @@ public class GameView {
 			}
 		}
 	}
-	public ImageIcon setImageIconButton(String name_img) {
-	;
-		Image name_image = new ImageIcon(getClass().getResource(
-				"/images/" + name_img + "")).getImage();
 
-		ImageIcon name_imgicon = new ImageIcon(name_image);
-		return name_imgicon;}
 }
