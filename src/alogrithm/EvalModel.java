@@ -134,7 +134,7 @@ public class EvalModel {
                 {10, 20, 30, 34, 40, 34, 30, 20, 10},
                 {6, 12, 18, 18, 20, 18, 18, 12, 6},
                 {2, 0, 8, 0, 8, 0, 8, 0, 2},
-                {0, 0, -2, 0, 4, 0, -2, 0, 0, 0},
+                {0, 0, -2, 0, 4, 0, -2, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -163,4 +163,16 @@ public class EvalModel {
     private int evalPieceFeature() {
         return 0;
     }
+    public void inBlack(Piece piece, int[] reversePosition) {
+		System.out.print(piece.character + " " + "BLACK" + " ");
+		System.out.println(" " + values[1][0] + "  " + values[1][1] + " vitri"
+				+ reversePosition[0] + ":" + reversePosition[1]);
+	}
+
+	public void inRED(Piece piece) {
+		System.out.print(piece.character + " " + "RED" + " ");
+		System.out.println(" " + values[0][0] + "  " + values[0][1] + " vitri"
+				+ piece.position[0] + ":" + piece.position[1]);
+	}
+
 }

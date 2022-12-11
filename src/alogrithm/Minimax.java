@@ -9,20 +9,20 @@ import chess.Rules;
 import control.GameController;
 
 public class Minimax {
-	private static int DEPTH = 2;
+//	private static int DEPTH = 2;
 	private Board board;
 	private GameController controller = new GameController();
 
-	public Node search(Board board) {
+	public Node search(Board board, int depth) {
 		this.board = board;
-		if (board.pieces.size() < 28)
-			DEPTH = 3;
-		if (board.pieces.size() < 16)
-			DEPTH = 4;
-		if (board.pieces.size() < 6)
-			DEPTH = 5;
-		if (board.pieces.size() < 4)
-			DEPTH = 6;
+//		if (board.pieces.size() < 28)
+//			DEPTH = 3;
+//		if (board.pieces.size() < 16)
+//			DEPTH = 4;
+//		if (board.pieces.size() < 6)
+//			DEPTH = 5;
+//		if (board.pieces.size() < 4)
+//			DEPTH = 6;
 
 		long startTime = System.currentTimeMillis();
 		Node best = null;
@@ -30,7 +30,7 @@ public class Minimax {
 
 		for (Node n : moves) {
 			Piece eaten = board.updatePiece(n.piece, n.to); // cập nhật lại bàn cờ, để xem vị trí mới của quân
-			n.value = minimax(DEPTH, n, board, false);
+			n.value = minimax(depth, n, board, false);
 			if (best == null || n.value >= best.value)
 				best = n;
 			/* Back move */
@@ -50,8 +50,10 @@ public class Minimax {
 		ArrayList<Node> moves = new ArrayList<Node>();
 		for (Map.Entry<String, Piece> stringPieceEntry : board.pieces.entrySet()) {
 			Piece piece = stringPieceEntry.getValue();
-			if (isplayer && piece.color == 'r') continue;
-            if (!isplayer && piece.color == 'b') continue;
+			if (isplayer && piece.color == 'r')
+				continue;
+			if (!isplayer && piece.color == 'b')
+				continue;
 			for (int[] nxt : Rules.getNextMove(piece.key, piece.position, board))
 				moves.add(new Node(piece.key, piece.position, nxt));
 		}
@@ -61,32 +63,51 @@ public class Minimax {
 	public int minimax(int depth, Node state, Board board, boolean isplayer) {
 		int result = 0;
 		ArrayList<Node> moves = generateMovesForAll(isplayer);
-		if (depth == 0 || controller.hasWin(board) != 'x') { // đỏ chưa thắng và game chưa hòa
+
+		if (depth == 0 || controller.hasWin(board) != 'x') // đỏ chưa thắng và game chưa hòa
 			return new EvalModel().eval(board, 'b');
-		}
-		else if (isplayer == true) { // max /r
-//			ArrayList<Node> moves = generateMovesForAll();
-			int temp = -99999999;
-			for (Node n : moves) {
-				int value = minimax(depth - 1, n, board, false);
-				if (value > temp) {
-					temp = value;
-					result = temp;
+
+		if (depth == 2) {
+			if (isplayer == true) { // max /r
+				// ArrayList<Node> moves = generateMovesForAll();
+				int temp = -99999999;
+				for (Node n : moves) {
+					int value = minimax(depth - 1, n, board, false);
+					if (value > temp) {
+						temp = value;
+//						result = temp;
+					}
+					return temp;
 				}
-			}
-			return temp;
-		}
-		else if (isplayer == false) { // min /b
-//			ArrayList<Node> moves = generateMovesForAll();
-			int temp = 99999999;
-			for (Node n : moves) {
-				int value = minimax(depth - 1, n, board, true);
-				if (value < temp) {
-					temp = value;
-					result = temp;
+				return temp;
+			} else if (isplayer == false) { // min /b
+				// ArrayList<Node> moves = generateMovesForAll();
+				int temp = 99999999;
+				for (Node n : moves) {
+					int value = minimax(depth - 1, n, board, true);
+					if (value < temp) {
+						temp = value;
+//						result = temp;
+					}
+					return temp;
 				}
+				return temp;
 			}
-			return temp;
+		} 
+		else {
+			for (Node n : moves) {
+				 Piece eaten = board.updatePiece(n.piece, n.to);
+			if (isplayer)
+				result = Math.min(result, minimax(depth - 1, n, board, false));
+			else
+				result = Math.max(result, minimax(depth - 1, n, board, true));
+		
+			 board.updatePiece(n.piece, n.from);
+             if (eaten != null) {
+                 board.pieces.put(eaten.key, eaten);
+                 board.backPiece(eaten.key);
+             }	}
+			System.out.println(result +"oiug");
 		}
 		return result;
 	}

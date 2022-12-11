@@ -6,11 +6,12 @@ import chess.Rules;
 import control.GameController;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -33,6 +34,12 @@ public class GameView {
 	private JLayeredPane pane;
 	private GameController controller;
 	private JLabel lblPlayer;
+	private JRadioButton rdbMinimax, rdbAlphaBeta;
+	private JComboBox<String> cbLevel;
+//	JButton btnResetGame;
+	JLabel lblPiece;
+	JRadioButton rdbOnePlayer, rdbTwoPlayer;
+	JLabel bgBoard;
 
 	public GameView(GameController gameController) {
 		this.controller = gameController;
@@ -49,7 +56,7 @@ public class GameView {
 		frame.add(pane);
 
 		/* Initialize chess board and listeners on each slot. */
-		JLabel bgBoard = new JLabel(new ImageIcon("res/img/board.png"));
+		bgBoard = new JLabel(new ImageIcon("res/img/board.png"));
 		bgBoard.setLocation(0, 0);
 		bgBoard.setSize(VIEW_WIDTH, VIEW_HEIGHT);
 		bgBoard.addMouseListener(new BoardClickListener());
@@ -61,12 +68,12 @@ public class GameView {
 		lblPlayer.setSize(PIECE_WIDTH, PIECE_HEIGHT);
 		pane.add(lblPlayer, 0);
 
-//		Bắt đầu lại trò chơi
-		JButton btnResetGame = new JButton("Reset Game");
-		btnResetGame.setSize(120, 30);
-		btnResetGame.setLocation(750, 200);
-		btnResetGame.setFocusable(false);
-		pane.add(btnResetGame);
+////		Bắt đầu lại trò chơi
+//		btnResetGame = new JButton("Reset Game");
+//		btnResetGame.setSize(120, 30);
+//		btnResetGame.setLocation(750, 200);
+//		btnResetGame.setFocusable(false);
+//		pane.add(btnResetGame);
 
 //		Chơi người vs người, người vs máy
 		JPanel pnlChooseType = new JPanel();
@@ -75,69 +82,82 @@ public class GameView {
 		pnlChooseType.setBorder(new LineBorder(new Color(0, 0, 0)));
 		pnlChooseType.setLayout(new FlowLayout(FlowLayout.LEFT));
 		pane.add(pnlChooseType);
-		
+
 		JLabel lbltextType = new JLabel("Number of players:");
 		pnlChooseType.add(lbltextType);
-		
-		
-		JRadioButton rdbOne = new JRadioButton("One player");
-		rdbOne.setBounds(725, 200, 170, 30);
-		rdbOne.setFocusable(false);
-		pnlChooseType.add(rdbOne);
-		
-		JRadioButton rdbTwo = new JRadioButton("Two player");
-		pnlChooseType.add(rdbTwo);
-		rdbTwo.setFocusable(false);
-		rdbTwo.setBounds(725, 250, 170, 30);
 
-		ButtonGroup btg = new ButtonGroup();
-		btg.add(rdbOne);
-		btg.add(rdbTwo);
+		rdbOnePlayer = new JRadioButton("One player");
+		rdbOnePlayer.setBounds(725, 200, 170, 30);
+		rdbOnePlayer.setFocusable(false);
+		pnlChooseType.add(rdbOnePlayer);
+
+		rdbTwoPlayer = new JRadioButton("Two player");
+		pnlChooseType.add(rdbTwoPlayer);
+		rdbTwoPlayer.setFocusable(false);
+		rdbTwoPlayer.setBounds(725, 250, 170, 30);
+
+		ButtonGroup btgChooseType = new ButtonGroup();
+		btgChooseType.add(rdbOnePlayer);
+		btgChooseType.add(rdbTwoPlayer);
 //		kết thúc phần chọn loại trò chơi
-		
+
 //		
 //		Level game: minimax, alphabeta ( cấp độ depth)
+		String[] listDepth = { "Normal", "Hard" };
+
 		JPanel pnlChooseLevel = new JPanel();
-		pnlChooseLevel.setSize(165, 100);
-		pnlChooseLevel.setLocation(725, 250);
+		pnlChooseLevel.setSize(165, 125);
+		pnlChooseLevel.setLocation(725, 350);
 		pnlChooseLevel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		pnlChooseLevel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		pane.add(pnlChooseLevel);
-		
-		JLabel lbltextLevel = new JLabel("Level Game:");
+
+		JLabel lbltextLevel = new JLabel("Level Game:                    ");
 		pnlChooseLevel.add(lbltextLevel);
-		
-		
-//		JRadioButton rdb1 = new JRadioButton("One player");
-//		rdb1.setBounds(725, 200, 170, 30);
-//		rdb1.setFocusable(false);
-//		pnlChooseLevel.add(rdb1);
-//		
-//		JRadioButton rdb2 = new JRadioButton("Two player");
-//		pnlChooseLevel.add(rdb2);
-//		rdb2.setFocusable(false);
-//		rdb2.setBounds(725, 250, 170, 30);
-//
-//		ButtonGroup btg = new ButtonGroup();
-//		btg.add(rdb1);
-//		btg.add(rdb2);
+
+		rdbAlphaBeta = new JRadioButton("Alpha Beta");
+		rdbAlphaBeta.setBounds(725, 200, 170, 30);
+		rdbAlphaBeta.setFocusable(false);
+		pnlChooseLevel.add(rdbAlphaBeta);
+
+		rdbMinimax = new JRadioButton("Minimax        ");
+		pnlChooseLevel.add(rdbMinimax);
+		rdbMinimax.setFocusable(false);
+		rdbMinimax.setBounds(725, 250, 170, 30);
+
+		ButtonGroup btgChooseLevel = new ButtonGroup();
+		btgChooseLevel.add(rdbAlphaBeta);
+		btgChooseLevel.add(rdbMinimax);
+
+		cbLevel = new JComboBox<>(listDepth);
+		pnlChooseLevel.add(cbLevel);
+		cbLevel.setBounds(725, 200, 170, 30);
 //		kết thúc phần chọn loại trò chơi
-		
+
 		/* Initialize chess pieces and listeners on each piece. */
 		Map<String, Piece> pieces = board.pieces;
 		for (Map.Entry<String, Piece> stringPieceEntry : pieces.entrySet()) {
 			String key = stringPieceEntry.getKey();
 			int[] pos = stringPieceEntry.getValue().position;
 			int[] sPos = modelToViewConverter(pos);
-			JLabel lblPiece = new JLabel(new ImageIcon("res/img/" + key.substring(0, 2) + ".png"));
-
+			lblPiece = new JLabel(new ImageIcon("res/img/" + key.substring(0, 2) + ".png"));
 			lblPiece.setLocation(sPos[0], sPos[1]);
 			lblPiece.setSize(PIECE_WIDTH, PIECE_HEIGHT);
 			lblPiece.addMouseListener(new PieceOnClickListener(key));
 			pieceObjects.put(stringPieceEntry.getKey(), lblPiece);
 			pane.add(lblPiece, 0);
+
 		}
 		frame.setVisible(true);
+//		btnResetGame.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				frame.repaint();
+//				pane.remove(lblPlayer);
+//				pane.remove(lblPiece);
+//				resetGame();
+//			}
+//		});
 	}
 
 	public void movePieceFromModel(String pieceKey, int[] to) {
@@ -188,9 +208,7 @@ public class GameView {
 				"Intelligent Chinese Chess", JOptionPane.INFORMATION_MESSAGE);
 		System.exit(0);
 	}
-	
 
-	
 	class PieceOnClickListener extends MouseAdapter {
 		private String key;
 
@@ -239,4 +257,69 @@ public class GameView {
 		}
 	}
 
+	public int depthTree() {
+		String value = cbLevel.getSelectedItem().toString();
+		System.out.println(value);
+		int depth = 0;
+		if (value.equals("Normal")) {
+			return 0;
+		} else {
+			if (rdbAlphaBeta.isSelected()) {
+				if (board.pieces.size() < 28)
+					depth = 3;
+				if (board.pieces.size() < 16)
+					depth = 4;
+				if (board.pieces.size() < 6)
+					depth = 5;
+				if (board.pieces.size() < 4)
+					depth = 6;
+//			if()
+				return depth;
+			} else {
+				return 3;
+			}
+		}
+	}
+
+	public void level() {
+		if (rdbAlphaBeta.isSelected() && rdbOnePlayer.isSelected()) {
+			controller.responseMoveChessABOnePlayer(board, this, depthTree());
+		} else if (rdbMinimax.isSelected() && rdbOnePlayer.isSelected()) {
+			controller.responseMoveChessMinimaxOnePlayer(board, this, depthTree());
+		} else if (rdbOnePlayer.isSelected()) {
+			controller.responseMoveChessABOnePlayer(board, this, depthTree());
+		} else if (rdbTwoPlayer.isSelected()) {
+			twoPlayer();
+		}
+	}
+
+//	public void resetGame() {
+//		Map<String, Piece> pieces = board.pieces;
+//		for (Map.Entry<String, Piece> stringPieceEntry : pieces.entrySet()) {
+//			String key = stringPieceEntry.getKey();
+//			int[] pos = stringPieceEntry.getValue().position;
+//			int[] sPos = modelToViewConverter(pos);
+//			lblPiece = new JLabel(new ImageIcon("res/img/" + key.substring(0, 2) + ".png"));
+//
+//			lblPiece.setLocation(sPos[0], sPos[1]);
+//			lblPiece.setSize(PIECE_WIDTH, PIECE_HEIGHT);
+//			lblPiece.addMouseListener(new PieceOnClickListener(key));
+//			pieceObjects.put(stringPieceEntry.getKey(), lblPiece);
+//			pane.add(lblPiece, 0);
+//		}
+//	}
+	public void twoPlayer() {
+		int count = 1;
+//		while (controller.hasWinGame(board)) {
+		if (count == 1) {
+			bgBoard.addMouseListener(new BoardClickListener());
+			lblPlayer = new JLabel(new ImageIcon("res/img/b.png"));
+			count = 0;
+		} else if (count == 0) {
+			lblPlayer = new JLabel(new ImageIcon("res/img/r.png"));
+			bgBoard.addMouseListener(new BoardClickListener());
+
+			count = 1;
+		}
+	}
 }

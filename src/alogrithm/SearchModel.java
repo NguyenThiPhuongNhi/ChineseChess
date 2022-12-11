@@ -13,27 +13,27 @@ import java.util.Map;
  * Alpha beta search.
  */
 public class SearchModel {
-    private static int DEPTH = 2;
+//    private static int DEPTH = 2;
     private Board board;
     private GameController controller = new GameController();
 
-    public AlphaBetaNode search(Board board) {
+    public AlphaBetaNode search(Board board, int depth) {
         this.board = board;
-        if (board.pieces.size() < 28)
-            DEPTH = 3;
-        if (board.pieces.size() < 16)
-            DEPTH = 4;
-        if (board.pieces.size() < 6)
-            DEPTH = 5;
-        if (board.pieces.size() < 4)
-            DEPTH = 6;
+//        if (board.pieces.size() < 28)
+//            DEPTH = 3;
+//        if (board.pieces.size() < 16)
+//            DEPTH = 4;
+//        if (board.pieces.size() < 6)
+//            DEPTH = 5;
+//        if (board.pieces.size() < 4)
+//            DEPTH = 6;
         long startTime = System.currentTimeMillis();
         AlphaBetaNode best = null;
         ArrayList<AlphaBetaNode> moves = generateMovesForAll(true);
         for (AlphaBetaNode n : moves) {
             /* Move*/
             Piece eaten = board.updatePiece(n.piece, n.to);
-            n.value = alphaBeta(DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+            n.value = alphaBeta(depth, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
             /* Select a best move during searching to save time*/
             if (best == null || n.value >= best.value)
                 best = n;
